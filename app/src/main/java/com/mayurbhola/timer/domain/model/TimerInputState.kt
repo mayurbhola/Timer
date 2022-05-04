@@ -9,5 +9,7 @@ data class TimerInputState(
     val errorMinute: String? = null,
     val errorSecond: String? = null,
     val errorTotalTimerInSeconds: String? = null,
-    val validated: Boolean = false
+    val validated: Boolean = false,
+    val listTimerData: List<TimerData> = emptyList(),
+    val currentTimeMillis: Long = 0L
 )

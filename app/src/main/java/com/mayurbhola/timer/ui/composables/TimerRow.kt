@@ -7,8 +7,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -20,20 +18,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mayurbhola.timer.domain.model.TimerData
 import com.mayurbhola.timer.ui.screens.main.MainTimerViewModel
 import com.mayurbhola.timer.util.TestTags
-import kotlinx.coroutines.delay
 import java.util.*
 
 @Composable
 fun TimerRow(
     timerData: TimerData,
+    currentTimeMillis: Long,
     mainTimerViewModel: MainTimerViewModel = hiltViewModel()
 ) {
-    mainTimerViewModel.updateTimerRemainingValue(timerData = timerData)
+
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(all = 12.dp)) {
 
         Text(
             text = DateUtils.formatElapsedTime(
-                mainTimerViewModel.timerRemainingValue[timerData.id] ?: 0
+                mainTimerViewModel.calculateRemainingTime(timerData, currentTimeMillis)
             ),
             modifier = Modifier
                 .weight(1f)
@@ -62,20 +60,13 @@ fun TimerRow(
             Text(if (timerData.status == 0) "Start" else "Stop")
         }
     }
-
-    val updated =
-        rememberUpdatedState(newValue = mainTimerViewModel.getStartedTimers())
-
-    LaunchedEffect(key1 = updated, block = {
-        delay(1000)
-        mainTimerViewModel.updateCountDownTimers(updated)
-    })
 }
 
 @Preview
 @Composable
 fun TimerRowPreview() {
     TimerRow(
-        timerData = TimerData(0, 100, 0, 0, 0)
+        timerData = TimerData(0, 100, 0, 0, 0),
+        Calendar.getInstance().timeInMillis
     )
 }

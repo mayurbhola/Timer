@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
@@ -30,7 +29,6 @@ import java.util.*
 
 @Composable
 fun MainTimerScreen(mainTimerViewModel: MainTimerViewModel = hiltViewModel()) {
-    val allTimers = mainTimerViewModel.getAllTimers.collectAsState(initial = emptyList())
 
     TimerTheme {
         Surface(
@@ -54,7 +52,7 @@ fun MainTimerScreen(mainTimerViewModel: MainTimerViewModel = hiltViewModel()) {
                                     val t = Calendar.getInstance().timeInMillis
                                     mainTimerViewModel.setTimer(
                                         TimerData(
-                                            timerValueInSeconds = state.totalTimerInSeconds,
+                                            timerValueInSeconds = mainTimerViewModel.timeInputValidationState.totalTimerInSeconds,
                                             createdAtMillis = t, modifiedAtMillis = t, status = 1
                                         )
                                     )
@@ -148,7 +146,7 @@ fun MainTimerScreen(mainTimerViewModel: MainTimerViewModel = hiltViewModel()) {
                             Text("Start!")
                         }
                         Text(
-                            if (allTimers.value.isNotEmpty()) "Timers" else "No Timers",
+                            if (state.listTimerData.isNotEmpty()) "Timers" else "No Timers",
                             Modifier.padding(all = 12.dp),
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = FontFamily.SansSerif,
@@ -161,9 +159,9 @@ fun MainTimerScreen(mainTimerViewModel: MainTimerViewModel = hiltViewModel()) {
                             state = listState,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(allTimers.value) { timer ->
+                            items(state.listTimerData) { timer ->
                                 Divider()
-                                TimerRow(timerData = timer)
+                                TimerRow(timerData = timer, state.currentTimeMillis)
                             }
                         }
                     }

@@ -10,31 +10,27 @@ import com.mayurbhola.timer.di.IoDispatcher
 import com.mayurbhola.timer.domain.model.TimerData
 import com.mayurbhola.timer.domain.model.TimerInputState
 import com.mayurbhola.timer.domain.model.TimerInputValidationEvent
-import com.mayurbhola.timer.domain.usecases.AllTimers
-import com.mayurbhola.timer.domain.usecases.SetTimer
-import com.mayurbhola.timer.domain.usecases.UpdateTimer
-import com.mayurbhola.timer.domain.usecases.ValidateTime
+import com.mayurbhola.timer.domain.usecases.TimerUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainTimerViewModel @Inject constructor(
-    allTimers: AllTimers,
-    private val setTimer: SetTimer,
-    private val updateTimer: UpdateTimer,
-    private val validateTime: ValidateTime,
+    private val timerUseCases: TimerUseCases,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private val getAllTimers = allTimers.invoke()
+    private val getAllTimers = timerUseCases.allTimers.invoke()
 
     var timeInputValidationState by mutableStateOf(TimerInputState())
+
+    private val timeInputState = MutableStateFlow(TimerInputState())
+    val uiState : StateFlow<TimerInputState> = timeInputState.asStateFlow()
 
     private val timer = Timer()
 
@@ -61,22 +57,22 @@ class MainTimerViewModel @Inject constructor(
 
     fun setTimer(timerData: TimerData) =
         viewModelScope.launch(ioDispatcher) {
-            setTimer.invoke(timerData)
+            timerUseCases.setTimer.invoke(timerData)
         }
 
     fun updateTimer(timerData: TimerData) =
         viewModelScope.launch(ioDispatcher) {
-            updateTimer.invoke(timerData)
+            timerUseCases.updateTimer.invoke(timerData)
         }
 
     fun updateTimer(id: Int, status: Int, modified_at: Long) =
         viewModelScope.launch(ioDispatcher) {
-            updateTimer.invoke(id, status, modified_at)
+            timerUseCases.updateTimer.invoke(id, status, modified_at)
         }
 
     fun updateTimer(id: Int, status: Int) =
         viewModelScope.launch(ioDispatcher) {
-            updateTimer.invoke(id, status)
+            timerUseCases.updateTimer.invoke(id, status)
         }
 
     fun timeInputToString(time: Int): String = (if (time < 0) "" else "$time")
@@ -121,15 +117,16 @@ class MainTimerViewModel @Inject constructor(
 
     private fun checkValidation(): Boolean {
 
-        val hourResult = validateTime.checkHour(timeInputValidationState.hours)
-        val minuteResult = validateTime.checkMinute(timeInputValidationState.minutes)
-        val secondResult = validateTime.checkSecond(timeInputValidationState.seconds)
+        val hourResult = timerUseCases.validateTime.checkHour(timeInputValidationState.hours)
+        val minuteResult = timerUseCases.validateTime.checkMinute(timeInputValidationState.minutes)
+        val secondResult = timerUseCases.validateTime.checkSecond(timeInputValidationState.seconds)
 
         val inputtedTotalTime = timeInputValidationState.hours.times(3600L)
             .plus(timeInputValidationState.minutes.times(60L))
             .plus(timeInputValidationState.seconds)
 
-        val totalTimerInSecondsResult = validateTime.checkTotalTimerSeconds(inputtedTotalTime)
+        val totalTimerInSecondsResult =
+            timerUseCases.validateTime.checkTotalTimerSeconds(inputtedTotalTime)
 
         val hasError = listOf(
             hourResult,

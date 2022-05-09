@@ -121,13 +121,25 @@ fun MainTimerScreen(mainTimerViewModel: MainTimerViewModel = hiltViewModel()) {
 
                         if (!state.validated) {
                             if (!state.errorHour.isNullOrBlank()) {
-                                Text(text = "${state.errorHour}", color = Color.Red)
+                                Text(
+                                    text = "${state.errorHour}", color = Color.Red,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
                             } else if (!state.errorMinute.isNullOrBlank()) {
-                                Text(text = "${state.errorMinute}", color = Color.Red)
+                                Text(
+                                    text = "${state.errorMinute}", color = Color.Red,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
                             } else if (!state.errorSecond.isNullOrBlank()) {
-                                Text(text = "${state.errorSecond}", color = Color.Red)
+                                Text(
+                                    text = "${state.errorSecond}", color = Color.Red,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
                             } else if (!state.errorTotalTimerInSeconds.isNullOrBlank()) {
-                                Text(text = "${state.errorTotalTimerInSeconds}", color = Color.Red)
+                                Text(
+                                    text = "${state.errorTotalTimerInSeconds}", color = Color.Red,
+                                    modifier = Modifier.padding(start = 12.dp)
+                                )
                             }
                         }
 
